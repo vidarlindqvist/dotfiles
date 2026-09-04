@@ -1,0 +1,10 @@
+Type=X-GNOME-Metatheme
+[Desktop Entry]
+Name=Tokyonight-Dark-Glass
+Comment=Tokyonight-Dark with a translucent background/titlebar/view, for use with apps that should look glassy (e.g. Thunar via GTK_THEME=Tokyonight-Dark-Glass). Everything else stays on the plain opaque Tokyonight-Dark.
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=Tokyonight-Dark-Glass
+IconTheme=Tokyonight-Dark
+CursorTheme=Tokyonight-cursors

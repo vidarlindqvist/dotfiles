@@ -1,0 +1,12 @@
+/* GTK4 counterpart of ../gtk-3.0/gtk.css -- see that file for why this
+ * lives in a separate opt-in theme instead of the global gtk-4.0/gtk.css. */
+
+@import url("/usr/share/themes/Tokyonight-Dark/gtk-4.0/gtk.css");
+
+.background {
+    background-color: rgba(26, 27, 38, 0.55); /* tokyonight bg #1a1b26 */
+}
+
+windowhandle {
+    background-color: rgba(22, 22, 30, 0.55); /* tokyonight bg_dark #16161e */
+}

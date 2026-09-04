@@ -1,0 +1,28 @@
+/* Glassy variant of Tokyonight-Dark, GTK3.
+ *
+ * Only loaded when an app is launched with GTK_THEME=Tokyonight-Dark-Glass
+ * (currently just Thunar -- see the fileManager exec_cmd in hyprland.lua).
+ * Kept as a separate theme rather than in the global ~/.config/gtk-3.0/gtk.css
+ * because that file is unconditional for every GTK3 app: putting the
+ * transparency there made swappy's toolbar (and anything else GTK3) glassy
+ * too, since they all share the same generic .background/.view CSS classes
+ * with no way to tell them apart in plain CSS.
+ *
+ * Real per-pixel alpha here is what makes Hyprland's compositor blur
+ * (decoration.blur, already on in hyprland.lua) show through -- same trick
+ * as ghostty's background-opacity and rofi's blur layer_rule.
+ */
+
+@import url("/usr/share/themes/Tokyonight-Dark/gtk-3.0/gtk.css");
+
+.background {
+    background-color: rgba(26, 27, 38, 0.55); /* tokyonight bg #1a1b26 */
+}
+
+.titlebar {
+    background-color: rgba(22, 22, 30, 0.55); /* tokyonight bg_dark #16161e */
+}
+
+.view {
+    background-color: rgba(50, 52, 73, 0.55); /* tokyonight base #323449 */
+}

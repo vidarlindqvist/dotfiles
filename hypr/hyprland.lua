@@ -50,6 +50,7 @@ local menu        = "rofi -show drun"
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("dunst")
 end)
 
 
@@ -61,6 +62,10 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+
+-- GTK apps (Thunar, etc.) -- redundant with the dconf gtk-theme/icon-theme
+-- keys, but some GTK apps prefer the env var over gsettings
+hl.env("GTK_THEME", "Tokyonight-Dark")
 
 
 -----------------------
@@ -109,8 +114,8 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 10,
-        rounding_power = 2,
+        rounding       = 0,
+        rounding_power = 0,
 
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
@@ -184,6 +189,9 @@ hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "
 
 -- Blur behind rofi so its translucent background matches ghostty's look
 hl.layer_rule({ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.2 })
+
+-- Blur behind dunst notifications, same trick as rofi above
+hl.layer_rule({ match = { namespace = "notifications" }, blur = true, ignore_alpha = 0.2 })
 
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({
@@ -265,85 +273,41 @@ hl.device({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+-- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
-hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
+hl.bind(mainMod .. " + W", hl.dsp.window.close())
+hl.bind(mainMod .. " + SHIFT + backspace", hl.dsp.exit())    -- fully quits Hyprland, drops back to tty1
+-- GTK_THEME override so only Thunar gets the glassy variant -- everything
+-- else (swappy, etc.) stays on the normal opaque Tokyonight-Dark
+hl.bind(mainMod .. " + F", hl.dsp.exec_cmd("GTK_THEME=Tokyonight-Dark-Glass " .. fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+-- hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind("ALT + space", hl.dsp.exec_cmd(menu))    -- Spotlight-style launcher
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
--- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+-- Screenshots (saved to ~/Pictures/Screenshots)
+-- Print: whole screen, saved + copied to clipboard in one shot
+hl.bind("Print", hl.dsp.exec_cmd(
+    "grim - | tee ~/Pictures/Screenshots/$(date +%Y%m%d_%H%M%S).png | wl-copy"
+))
+-- SHIFT + Print, or mainMod + SHIFT + S: drag-select a region, then
+-- annotate/crop in swappy, which saves on its own (see
+-- ~/.config/swappy/config for save location)
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd(
+    "grim -g \"$(slurp)\" - | swappy -f -"
+))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(
+    "grim -g \"$(slurp)\" - | swappy -f -"
+))
 
-------------------------------------------------
----- AEROSPACE-STYLE BINDS (ported from macOS) ----
-------------------------------------------------
--- See ~/dev/dotfiles/linux/README.md and linux/hypr/aerospace_keybinds.conf
--- for the original translation notes. AeroSpace's modifier was ctrl+cmd+alt
--- (only to dodge macOS collisions); mainMod (SUPER) is the equivalent single
--- dedicated modifier here. hjkl bound to l/d/u/r to match AeroSpace's
--- vim-style layout.
-
--- focus (AeroSpace: ctrl-cmd-alt-h/j/k/l)
-hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + j", hl.dsp.focus({ direction = "down" }))
-hl.bind(mainMod .. " + k", hl.dsp.focus({ direction = "up" }))
+-- Move focus with mainMod + vim keys
+hl.bind(mainMod .. " + h",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + l", hl.dsp.focus({ direction = "right" }))
-
--- move window (AeroSpace: ctrl-cmd-alt-shift-h/j/k/l)
-hl.bind(mainMod .. " + SHIFT + h", hl.dsp.window.move({ direction = "left" }))
-hl.bind(mainMod .. " + SHIFT + j", hl.dsp.window.move({ direction = "down" }))
-hl.bind(mainMod .. " + SHIFT + k", hl.dsp.window.move({ direction = "up" }))
-hl.bind(mainMod .. " + SHIFT + l", hl.dsp.window.move({ direction = "right" }))
-
--- resize (AeroSpace: ctrl-cmd-alt-minus/equal, "resize smart")
--- No layout-aware "smart" resize in Hyprland; this nudges the active
--- window's edge by a pixel delta instead. Verified live: window.resize
--- takes flat x/y pixel-delta fields (confirmed against wiki.hypr.land).
-hl.bind(mainMod .. " + minus", hl.dsp.window.resize({ x = -50, y = 0 }))
-hl.bind(mainMod .. " + equal", hl.dsp.window.resize({ x = 50, y = 0 }))
-
--- floating toggle (AeroSpace: service-mode "f")
-hl.bind(mainMod .. " + f", hl.dsp.window.float({ action = "toggle" }))
-
--- lettered workspaces (AeroSpace: ctrl-cmd-alt-a..z minus h/j/k/l)
--- Trimmed to a few as an example -- copy the pattern for any more letters
--- you actually use day to day.
--- Verified live: bare workspace names ("A") are rejected ("Bad workspace");
--- named workspaces need the "name:" prefix ("name:A").
-hl.bind(mainMod .. " + a", hl.dsp.focus({ workspace = "name:A" }))
-hl.bind(mainMod .. " + b", hl.dsp.focus({ workspace = "name:B" }))
-hl.bind(mainMod .. " + c", hl.dsp.focus({ workspace = "name:C" }))
-hl.bind(mainMod .. " + SHIFT + a", hl.dsp.window.move({ workspace = "name:A" }))
-hl.bind(mainMod .. " + SHIFT + b", hl.dsp.window.move({ workspace = "name:B" }))
-hl.bind(mainMod .. " + SHIFT + c", hl.dsp.window.move({ workspace = "name:C" }))
-
--- workspace back-and-forth (AeroSpace: ctrl-cmd-alt-tab)
-hl.bind(mainMod .. " + tab", hl.dsp.focus({ workspace = "previous" }))
-
--- layout toggle (AeroSpace: ctrl-cmd-alt-period/comma, tiles vs accordion)
--- Hyprland's dwindle/master model has no exact accordion equivalent --
--- these are the closest options. mainMod+J below (shipped default) already
--- does the same as period; kept both since AeroSpace muscle memory expects
--- period/comma specifically.
-hl.bind(mainMod .. " + period", hl.dsp.layout("togglesplit"))
-hl.bind(mainMod .. " + comma",  hl.dsp.window.fullscreen({ action = "toggle" }))
-
--- service mode (AeroSpace: ctrl-cmd-alt-shift-semicolon)
--- Verified live against this Hyprland build: hl.define_submap(name, fn) --
--- exactly 2 args, hl.bind() inside the fn takes a bare key (no mod string).
-hl.define_submap("service", function()
-    hl.bind("backspace", hl.dsp.window.close())
-    hl.bind("escape",    hl.dsp.submap("reset"))
-end)
-hl.bind(mainMod .. " + SHIFT + semicolon", hl.dsp.submap("service"))
+hl.bind(mainMod .. " + k",    hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + j",  hl.dsp.focus({ direction = "down" }))
 
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]
@@ -355,7 +319,8 @@ end
 
 -- Example special workspace (scratchpad)
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+-- Freed up for the snipping-tool bind above (never used this one)
+-- hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 
 -- Scroll through existing workspaces with mainMod + scroll
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
