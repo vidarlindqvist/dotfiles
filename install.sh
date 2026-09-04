@@ -23,5 +23,7 @@ link() {
 link "$REPO_DIR/nvim" "$HOME/.config/nvim"
 link "$REPO_DIR/ghostty" "$HOME/.config/ghostty"
 link "$REPO_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
+link "$REPO_DIR/rofi" "$HOME/.config/rofi"
+link "$REPO_DIR/hypr" "$HOME/.config/hypr"
 
 echo "Done. Any pre-existing configs were backed up with a .bak.$TIMESTAMP suffix, not deleted."
