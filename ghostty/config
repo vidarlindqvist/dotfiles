@@ -1,0 +1,27 @@
+# --- Typography ---
+font-family = "FiraCode Nerd Font"
+font-size = 32.5
+
+# Disable FiraCode's programming ligatures, so == -> != <= etc. render as the
+# literal characters instead of merged glyphs. -calt is the contextual-alternates
+# feature that drives them; -liga/-dlig catch the rest.
+font-feature = -calt, -liga, -dlig
+
+# --- Window Styling (The Modern Floating Look) ---
+background-opacity = 0.75
+background-blur-radius = 20
+window-padding-x = 12
+window-padding-y = 12
+macos-titlebar-style = hidden
+
+# --- Cursor Customization ---
+cursor-style = block
+cursor-style-blink = true
+
+# --- Theme ---
+theme = TokyoNight
+
+# --- Shader --- post-process effect on the whole rendered window (every app
+# shown in it, including nvim/tmux -- it has no idea what produced the pixels
+# it's glowing). Source: github.com/0xhckr/ghostty-shaders/blob/main/bloom.glsl
+#custom-shader = shaders/bloom.glsl

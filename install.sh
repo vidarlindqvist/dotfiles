@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+
+link() {
+    local src="$1"
+    local dest="$2"
+
+    if [ -L "$dest" ]; then
+        rm "$dest"
+    elif [ -e "$dest" ]; then
+        echo "Backing up existing $dest -> $dest.bak.$TIMESTAMP"
+        mv "$dest" "$dest.bak.$TIMESTAMP"
+    fi
+
+    mkdir -p "$(dirname "$dest")"
+    ln -s "$src" "$dest"
+    echo "Linked $dest -> $src"
+}
+
+link "$REPO_DIR/nvim" "$HOME/.config/nvim"
+link "$REPO_DIR/ghostty" "$HOME/.config/ghostty"
+link "$REPO_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
+
+echo "Done. Any pre-existing configs were backed up with a .bak.$TIMESTAMP suffix, not deleted."

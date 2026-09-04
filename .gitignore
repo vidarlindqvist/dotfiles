@@ -1,0 +1,4 @@
+*.bak
+*.bak.*
+lazy-lock.json.pre-*
+.DS_Store
