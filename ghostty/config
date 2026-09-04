@@ -1,5 +1,5 @@
 # --- Typography ---
-font-family = "FiraCode Nerd Font"
+font-family = "JetBrainsMono Nerd Font"
 font-size = 32.5
 
 # Disable FiraCode's programming ligatures, so == -> != <= etc. render as the
