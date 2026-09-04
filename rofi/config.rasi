@@ -1,0 +1,93 @@
+/*
+ * Minimal TokyoNight (storm) launcher — matches ghostty + nvim.
+ * Palette: https://github.com/folke/tokyonight.nvim (storm variant)
+ */
+
+configuration {
+    modes:              "drun";
+    show-icons:         true;
+    icon-theme:         "Adwaita";
+    drun-display-format: "{name}";
+}
+
+* {
+    bg:      rgba(31, 35, 53, 82%);  /* bg_dark, translucent — layered blur fills the rest */
+    bg-sel:  #292e42;                /* bg_highlight */
+    fg:      #c0caf5;
+    fg-alt:  #565f89;                /* comment */
+    accent:  #7aa2f7;                /* blue */
+    border:  #3b4261;                /* fg_gutter */
+
+    background-color: transparent;
+    text-color:        @fg;
+}
+
+window {
+    location:          north;
+    anchor:             north;
+    y-offset:           12%;
+    width:              560px;
+    background-color:   @bg;
+    border:             1px;
+    border-color:       @border;
+    border-radius:      20px;
+    padding:            6px;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+    spacing:  4px;
+    padding:  10px;
+}
+
+inputbar {
+    background-color: transparent;
+    children:          [ entry ];
+    padding:            6px 10px 14px 10px;
+}
+
+entry {
+    placeholder:       "Search…";
+    placeholder-color: @fg-alt;
+    text-color:        @fg;
+    font:              "JetBrainsMono Nerd Font 15";
+}
+
+listview {
+    lines:        7;
+    scrollbar:    false;
+    spacing:      2px;
+    fixed-height: false;
+    border:       0px;
+}
+
+element {
+    padding:           9px 12px;
+    border-radius:     12px;
+    background-color:  transparent;
+    border:            0px;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: transparent;
+    text-color:         @fg;
+}
+
+element selected.normal {
+    background-color: @bg-sel;
+    text-color:        @accent;
+}
+
+element-icon {
+    size:              20px;
+    vertical-align:    0.5;
+    background-color:  transparent;
+    border:             0px;
+}
+
+element-text {
+    vertical-align:    0.5;
+    font:               "JetBrainsMono Nerd Font 12";
+    background-color:  transparent;
+}
