@@ -1,0 +1,41 @@
+# Translation of ~/.config/karabiner/karabiner.json's complex_modifications
+# to xremap. Install: https://github.com/xremap/xremap (has native Hyprland
+# support via wlroots' virtual-keyboard/input-method protocols).
+#
+# Karabiner rule "Right Option -> ctrl+cmd+alt" is intentionally NOT ported
+# here -- it only existed to build a modifier combo free of macOS
+# collisions. On Hyprland, $mainMod (see aerospace_keybinds.conf) already
+# is that dedicated modifier, so nothing needs remapping for it. If you'd
+# rather use a physical key (e.g. right Alt) as $mainMod instead of the
+# Super key, uncomment the modmap block below and set
+# `$mainMod = ALT_R` (or whatever you remap it to) in Hyprland instead.
+
+modmap:
+  # Karabiner rule 3: grave_accent_and_tilde <-> non_us_backslash swap.
+  # Pure keycode swap, independent of keyboard layout.
+  - name: Swedish-Pro ISO key swap (grave <-> the ISO extra key)
+    remap:
+      KEY_GRAVE: KEY_102ND
+      KEY_102ND: KEY_GRAVE
+
+  # Optional: only if you want a physical key to BE your Hyprland $mainMod
+  # instead of using Super directly (see note above).
+  # - name: Right Alt as WM modifier
+  #   remap:
+  #     KEY_RIGHTALT: KEY_LEFTMETA
+
+keymap:
+  # Karabiner rule 1: Left Option + h/j/k/l -> { } [ ].
+  # On macOS this worked by outputting Option+Shift+8/9 and Option+8/9,
+  # which the Swedish-Pro *layout* then turns into { } [ ]. xremap remaps
+  # keys, not characters, so the targets below assume a standard bracket
+  # layout (leftbrace/rightbrace keys shifted = { }, unshifted = [ ]).
+  # VERIFY against whatever XKB layout you actually run on Linux (likely
+  # `se`) -- Swedish layouts often need AltGr rather than plain Shift to
+  # reach brackets, so these targets may need adjusting once you can test.
+  - name: Option+hjkl braces (Swedish layout -- verify targets on your box)
+    remap:
+      Alt-h: Shift-leftbrace   # -> {
+      Alt-j: Shift-rightbrace  # -> }
+      Alt-k: leftbrace         # -> [
+      Alt-l: rightbrace        # -> ]
