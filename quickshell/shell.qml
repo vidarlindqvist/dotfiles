@@ -25,8 +25,141 @@
 import QtQuick
 import Quickshell
 import Quickshell.Networking
+import Quickshell.Services.Notifications
 
 ShellRoot {
+    NotificationServer {
+        id: notifServer
+        bodySupported: true
+        imageSupported: true
+        actionsSupported: false
+        onNotification: notification => {
+            notification.tracked = true
+        }
+    }
+
+    PanelWindow {
+        id: notifPanel
+        screen: Quickshell.screens.find(s => s.name === "DP-6")
+
+        anchors {
+            top: true
+            right: true
+        }
+
+        margins {
+            top: 12
+            right: 12
+        }
+
+        implicitWidth: 320
+        implicitHeight: Math.max(1, notifColumn.implicitHeight)
+        color: "transparent"
+
+        Column {
+            id: notifColumn
+            width: parent.width
+            spacing: 8
+
+            Repeater {
+                model: notifServer.trackedNotifications
+
+                delegate: Item {
+                    id: notifCard
+                    required property Notification modelData
+
+                    width: notifColumn.width
+                    height: notifBg.implicitHeight
+
+                    // Tokyonight urgency colors, same scheme as the old
+                    // dunst config (frame_color per urgency_*).
+                    readonly property color urgencyColor:
+                        modelData.urgency === NotificationUrgency.Critical ? "#f7768e"
+                        : modelData.urgency === NotificationUrgency.Low ? "#565f89"
+                        : "#7aa2f7"
+
+                    // image is often a direct picture (e.g. a contact
+                    // photo); appIcon is usually a themed icon *name*
+                    // that needs resolving via Quickshell.iconPath() to
+                    // get something Image.source can actually load.
+                    // Falls back to "" cleanly (no broken-image icon)
+                    // if neither is present or resolvable.
+                    readonly property string iconSource:
+                        modelData.image !== "" ? modelData.image
+                        : modelData.appIcon !== "" ? Quickshell.iconPath(modelData.appIcon, "")
+                        : ""
+
+                    Rectangle {
+                        id: notifBg
+                        width: parent.width
+                        implicitHeight: notifContent.implicitHeight + 24
+                        color: "#1a1b26"
+                        radius: 12
+                        border.width: 1
+                        border.color: notifCard.urgencyColor
+
+                        Row {
+                            id: notifContent
+                            anchors.centerIn: parent
+                            width: parent.width - 24
+                            spacing: 10
+
+                            Image {
+                                width: 32
+                                height: 32
+                                visible: notifCard.iconSource !== ""
+                                source: notifCard.iconSource
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Column {
+                                width: notifCard.iconSource !== "" ? parent.width - 42 : parent.width
+                                spacing: 4
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Text {
+                                    width: parent.width
+                                    color: "#c0caf5"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    wrapMode: Text.Wrap
+                                    textFormat: Text.PlainText
+                                    text: notifCard.modelData.summary
+                                }
+
+                                Text {
+                                    width: parent.width
+                                    visible: notifCard.modelData.body !== ""
+                                    color: "#a9b1d6"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    wrapMode: Text.Wrap
+                                    textFormat: Text.PlainText
+                                    text: notifCard.modelData.body
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: notifCard.modelData.dismiss()
+                        }
+                    }
+
+                    // Auto-expire: matches the old dunst timeouts
+                    // (low=4s, normal=8s, critical=never).
+                    Timer {
+                        running: notifCard.modelData.urgency !== NotificationUrgency.Critical
+                        interval: notifCard.modelData.urgency === NotificationUrgency.Low ? 4000 : 8000
+                        onTriggered: notifCard.modelData.expire()
+                    }
+                }
+            }
+        }
+    }
+
     PanelWindow {
         id: islandPanel
         screen: Quickshell.screens.find(s => s.name === "DP-6")
