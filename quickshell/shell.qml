@@ -27,6 +27,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Notifications
+import Quickshell.Services.Pipewire
 
 ShellRoot {
     // Tracks whether the real session lock (quickshell-lock/shell.qml) is
@@ -38,6 +39,118 @@ ShellRoot {
         path: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-lock-state"
         watchChanges: true
         onFileChanged: reload()
+    }
+
+    // Activates live property tracking for these two nodes -- Pipewire
+    // nodes are otherwise lazily subscribed, so volume/mute changes
+    // wouldn't actually notify without this.
+    PwObjectTracker {
+        objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
+    }
+
+    // Volume OSD -- a small pill that appears briefly whenever volume or
+    // mute changes (via the XF86Audio* keybinds calling wpctl, which
+    // Pipewire picks up reactively regardless of who changed it), then
+    // auto-hides. Hyprland has no OSD of its own, so without this,
+    // volume/mute changes are otherwise invisible.
+    PanelWindow {
+        id: osdPanel
+        screen: Quickshell.screens.find(s => s.name === "DP-6")
+        visible: false
+
+        // Default ExclusionMode.Auto reserves screen space matching this
+        // panel's size and pushes tiled windows away from the anchored
+        // edge -- fine for a permanent bar, wrong for a transient popup
+        // that should float over everything without shrinking anything.
+        exclusionMode: ExclusionMode.Ignore
+
+        readonly property var sinkAudio: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+        readonly property real volumePct: sinkAudio ? sinkAudio.volume : 0
+        readonly property bool isMuted: sinkAudio ? sinkAudio.muted : false
+        readonly property string accentColor: osdPanel.isMuted ? "#f7768e" : "#7aa2f7"
+
+        // Icon codepoints verified against the nerd-fonts glyphnames.json
+        // registry: nf-md-volume_mute=U+F075F, nf-md-volume_off=U+F0581,
+        // nf-md-volume_low=U+F057F, nf-md-volume_medium=U+F0580,
+        // nf-md-volume_high=U+F057E.
+        readonly property string icon: isMuted ? String.fromCodePoint(0xf075f)
+            : volumePct <= 0 ? String.fromCodePoint(0xf0581)
+            : volumePct < 0.34 ? String.fromCodePoint(0xf057f)
+            : volumePct < 0.67 ? String.fromCodePoint(0xf0580)
+            : String.fromCodePoint(0xf057e)
+
+        anchors {
+            bottom: true
+        }
+
+        margins {
+            bottom: 90
+        }
+
+        implicitWidth: 220
+        implicitHeight: 56
+        color: "transparent"
+
+        Timer {
+            id: hideTimer
+            interval: 1500
+            onTriggered: osdPanel.visible = false
+        }
+
+        Connections {
+            target: osdPanel.sinkAudio
+            function onVolumeChanged() {
+                osdPanel.visible = true
+                hideTimer.restart()
+            }
+            function onMutedChanged() {
+                osdPanel.visible = true
+                hideTimer.restart()
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: height / 2
+            color: "#e60d0e14" // alpha=0.9 (0xe6/255) -- OSD should read clearly
+
+            Row {
+                anchors.centerIn: parent
+                spacing: 12
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: osdPanel.accentColor
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 20
+                    text: osdPanel.icon
+                }
+
+                Rectangle {
+                    id: barTrack
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 110
+                    height: 6
+                    radius: 3
+                    color: "#292e42"
+
+                    Rectangle {
+                        height: parent.height
+                        radius: 3
+                        color: osdPanel.accentColor
+                        width: parent.width * Math.min(1, Math.max(0, osdPanel.volumePct))
+                    }
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: "#c0caf5"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    text: Math.round(osdPanel.volumePct * 100) + "%"
+                }
+            }
+        }
     }
 
     NotificationServer {
@@ -53,6 +166,7 @@ ShellRoot {
     PanelWindow {
         id: notifPanel
         screen: Quickshell.screens.find(s => s.name === "DP-6")
+        exclusionMode: ExclusionMode.Ignore
 
         anchors {
             top: true
@@ -175,6 +289,7 @@ ShellRoot {
     PanelWindow {
         id: islandPanel
         screen: Quickshell.screens.find(s => s.name === "DP-6")
+        exclusionMode: ExclusionMode.Ignore
 
         // Missing/empty file (no lock has happened yet this session)
         // reads as "" here, which correctly counts as unlocked.
