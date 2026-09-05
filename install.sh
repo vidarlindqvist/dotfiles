@@ -31,4 +31,15 @@ link "$REPO_DIR/dunst" "$HOME/.config/dunst"
 link "$REPO_DIR/swappy" "$HOME/.config/swappy"
 link "$REPO_DIR/gtk-theme-glass" "$HOME/.local/share/themes/Tokyonight-Dark-Glass"
 
+# Zen Browser's profile folder name is randomly generated per-install, so
+# this path will need updating if the profile is ever recreated. Current
+# profile confirmed via: ls ~/.config/zen/
+ZEN_PROFILE="$HOME/.config/zen/sizs8jqv.Default (release)"
+if [ -d "$ZEN_PROFILE" ]; then
+    link "$REPO_DIR/zen/user.js" "$ZEN_PROFILE/user.js"
+    link "$REPO_DIR/zen/chrome/userChrome.css" "$ZEN_PROFILE/chrome/userChrome.css"
+else
+    echo "Skipping Zen theme: profile dir not found at $ZEN_PROFILE (update install.sh with the current profile name)"
+fi
+
 echo "Done. Any pre-existing configs were backed up with a .bak.$TIMESTAMP suffix, not deleted."

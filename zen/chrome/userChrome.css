@@ -1,0 +1,143 @@
+/* Tokyonight (Night variant) chrome theme for Zen Browser.
+ * Colors match ghostty/tmux/GTK/dunst elsewhere in this rice:
+ *   bg #1a1b26, bg_dark #16161e, bg_highlight #292e42, base #323449
+ *   fg #c0caf5, comment #565f89, border #414868
+ *   blue #7aa2f7 (accent), red #f7768e, green #9ece6a, yellow #e0af68
+ *
+ * Two layers here on purpose: Zen's own --zen-* CSS variables (its
+ * documented theming API) for anything Zen-specific (workspace sidebar,
+ * compact mode, etc.), plus plain Firefox toolbar/tab IDs underneath,
+ * since those are what actually render the base chrome and are stable
+ * across Firefox forks even where Zen's own variables might not cover
+ * every element. Unlike the GTK apps in this rice, real window-level
+ * alpha/blur isn't reliably available for Firefox chrome, so this is
+ * solid-color theming, not glass -- open to revisiting if a working
+ * transparency trick turns up for this Zen version.
+ */
+
+/* The base window layer sitting behind the sidebar card and the content
+ * card -- was left transparent before, which showed as a border/seam
+ * wherever those two cards didn't fully cover it. */
+#main-window {
+    background-color: #1a1b26 !important;
+}
+
+:root {
+    --zen-primary-color: #7aa2f7 !important;
+    --zen-colors-primary: #1a1b26 !important;
+    --zen-colors-secondary: #16161e !important;
+    --zen-colors-tertiary: #292e42 !important;
+    --zen-colors-border: #414868 !important;
+
+    --toolbar-bgcolor: #1a1b26 !important;
+    --toolbar-color: #c0caf5 !important;
+    --tab-selected-bgcolor: #292e42 !important;
+    --lwt-accent-color: #1a1b26 !important;
+    --lwt-text-color: #c0caf5 !important;
+}
+
+#titlebar,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#sidebar-box,
+#sidebar-header {
+    background-color: #1a1b26 !important;
+    color: #c0caf5 !important;
+    border-color: #414868 !important;
+    font-family: "JetBrainsMono Nerd Font" !important;
+}
+
+/* Tabs */
+.tabbrowser-tab {
+    color: #565f89 !important;
+}
+
+.tabbrowser-tab[selected="true"] {
+    background-color: #292e42 !important;
+    color: #c0caf5 !important;
+}
+
+.tabbrowser-tab:hover {
+    background-color: #16161e !important;
+}
+
+/* URL bar */
+#urlbar-background,
+#urlbar,
+#urlbar-input-container {
+    background-color: #16161e !important;
+    color: #c0caf5 !important;
+    border-color: #414868 !important;
+}
+
+/* Search/command popup -- the floating suggestions dropdown under the
+ * search box (favicon + title + URL rows). Standard Firefox urlbarView
+ * classes, stable across versions/forks. */
+.urlbarView,
+.urlbarView-body-inner {
+    background-color: #16161e !important;
+    color: #c0caf5 !important;
+    border-color: #414868 !important;
+}
+
+.urlbarView-row {
+    color: #c0caf5 !important;
+}
+
+.urlbarView-row[selected] {
+    background-color: #292e42 !important;
+}
+
+.urlbarView-url {
+    color: #565f89 !important;
+}
+
+#urlbar[focused="true"] #urlbar-background {
+    border-color: #7aa2f7 !important;
+}
+
+/* Sidebar (workspaces / bookmarks / history) */
+#sidebar {
+    background-color: #16161e !important;
+    color: #c0caf5 !important;
+}
+
+/* --- Sharp corners, zero inset -- matching hyprland.lua's
+ * decoration.rounding = 0 / gaps_in = gaps_out = 0 / border_size = 0.
+ *
+ * Confirmed working, sourced from Zen's own GitHub (not guessed):
+ * https://github.com/zen-browser/desktop/discussions/233
+ * https://github.com/zen-browser/desktop/issues/2512
+ * The content view Zen renders (.browserSidebarContainer) is what has
+ * the visible rounded corner + margin around the actual page -- that's
+ * the "floating tile" look and the real source of both complaints.
+ * zen.theme.border-radius in user.js handles the rest of the browser's
+ * corners globally.
+ */
+:root {
+    --zen-border-radius: 0px !important;
+}
+
+#tabbrowser-tabbox {
+    padding: 0 !important;
+}
+
+#tabbrowser-tabbox #tabbrowser-tabpanels {
+    padding: 0 !important;
+}
+
+#tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    --zen-webview-border-radius: 0 0 0 0 !important;
+    --zen-element-seperation: 0 !important;
+    /* content/workspace card -- a step brighter than the #1a1b26
+     * background, using tokyonight's bg_highlight tone */
+    background-color: #292e42 !important;
+}
+
+#tabbrowser-tabbox #tabbrowser-tabpanels[zen-split-view="true"] .browserSidebarContainer {
+    margin: 0 !important;
+}
+
