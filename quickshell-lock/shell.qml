@@ -14,6 +14,10 @@ ShellRoot {
         id: lockContext
 
         onUnlocked: {
+            // Tell the main shell's corner pill it can show itself again
+            // (see lock.sh for the "locked" side of this flag).
+            Quickshell.execDetached(["sh", "-c", "echo -n unlocked > \"$XDG_RUNTIME_DIR/quickshell-lock-state\""])
+
             // Unlock before exiting, or the compositor shows a fallback
             // lock you can't interact with.
             lock.locked = false
@@ -26,9 +30,12 @@ ShellRoot {
         locked: true
 
         WlSessionLockSurface {
+            id: lockSurfaceWindow
+
             LockSurface {
                 anchors.fill: parent
                 context: lockContext
+                screen: lockSurfaceWindow.screen
             }
         }
     }

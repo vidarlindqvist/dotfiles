@@ -24,10 +24,22 @@
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Notifications
 
 ShellRoot {
+    // Tracks whether the real session lock (quickshell-lock/shell.qml) is
+    // currently up, via the flag file it and lock.sh write to. Lets the
+    // corner pill hide itself while locked -- it should only be visible
+    // once actually logged in, not float on top of the lock screen.
+    FileView {
+        id: lockStateFile
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-lock-state"
+        watchChanges: true
+        onFileChanged: reload()
+    }
+
     NotificationServer {
         id: notifServer
         bodySupported: true
@@ -163,6 +175,10 @@ ShellRoot {
     PanelWindow {
         id: islandPanel
         screen: Quickshell.screens.find(s => s.name === "DP-6")
+
+        // Missing/empty file (no lock has happened yet this session)
+        // reads as "" here, which correctly counts as unlocked.
+        visible: lockStateFile.text().trim() !== "locked"
 
         anchors {
             bottom: true

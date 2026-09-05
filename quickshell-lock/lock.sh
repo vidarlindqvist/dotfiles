@@ -9,4 +9,11 @@
 if pgrep -f "quickshell -p .*quickshell-lock/shell.qml" > /dev/null; then
     exit 0
 fi
+
+# Flag file the always-running main shell (quickshell/shell.qml) watches
+# via FileView to hide the corner clock pill while actually locked --
+# it should only show once logged in, not float on top of the lock
+# screen. Cleared back to "unlocked" by shell.qml's onUnlocked handler.
+echo -n "locked" > "$XDG_RUNTIME_DIR/quickshell-lock-state"
+
 exec quickshell -p /home/vidar/dev/dotfiles/quickshell-lock/shell.qml

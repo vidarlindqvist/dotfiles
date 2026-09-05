@@ -15,9 +15,12 @@ ShellRoot {
     }
 
     FloatingWindow {
+        id: testWindow
+
         LockSurface {
             anchors.fill: parent
             context: lockContext
+            screen: testWindow.screen
         }
     }
 
