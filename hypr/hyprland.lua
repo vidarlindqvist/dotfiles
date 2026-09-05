@@ -328,7 +328,11 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
 -- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))
+-- Plain mainMod+L collides with mainMod+l ("focus right", vim-style
+-- binds below) -- Hyprland doesn't distinguish key case without an
+-- extra modifier, so that combo was silently going to focus instead
+-- of lock. Shift makes this a genuinely different combo.
+hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("/home/vidar/dev/dotfiles/quickshell-lock/lock.sh"))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + W", hl.dsp.window.close())

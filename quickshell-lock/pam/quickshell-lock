@@ -1,0 +1,15 @@
+# REFERENCE ONLY -- not actually loaded by PAM. PAM correctly refuses
+# to trust a user-writable config directory for authentication (a
+# regular user must not be able to author their own auth-bypass
+# config), so pointing PamContext.configDirectory at a path under this
+# repo failed with "Permission denied". The real file needs to live at
+# /etc/pam.d/quickshell-lock (root-owned, like /etc/pam.d/hyprlock
+# already is) -- this copy is kept just so the required content is
+# documented alongside the rest of the lock screen config.
+#
+# To install: sudo cp this file to /etc/pam.d/quickshell-lock
+#
+# Mirrors /etc/pam.d/hyprlock exactly (already proven working on this
+# system, tested live) rather than the generic pam_unix.so-only config
+# from Quickshell's own lockscreen example.
+auth        include     login
