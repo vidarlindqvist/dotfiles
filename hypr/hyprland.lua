@@ -15,6 +15,17 @@
 ------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+-- DP-6 (LG UltraGear+) has an EDID "Dual Mode" quirk: its EDID-preferred
+-- mode is 3840x2160@60, but the monitor's actual native/desired mode is
+-- 2560x1440@480 -- "preferred" was silently picking the wrong one.
+hl.monitor({
+    output   = "DP-6",
+    mode     = "2560x1440@480.17Hz",
+    position = "auto",
+    scale    = "1",
+})
+
+-- Fallback for any other/future monitor
 hl.monitor({
     output   = "",
     mode     = "preferred",
