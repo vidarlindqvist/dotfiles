@@ -74,6 +74,8 @@ local menu        = "rofi -show drun"
 hl.on("hyprland.start", function ()
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("dunst")
+    hl.exec_cmd("hypridle")
+    hl.exec_cmd("wooting-bg-service") -- needed for Wootility to talk to the keyboard
 end)
 
 
@@ -89,6 +91,16 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- GTK apps (Thunar, etc.) -- redundant with the dconf gtk-theme/icon-theme
 -- keys, but some GTK apps prefer the env var over gsettings
 hl.env("GTK_THEME", "Tokyonight-Dark")
+
+-- NVIDIA (nvidia-open) hardening for Wayland. Nothing here forces
+-- software rendering/cursors -- everything's worked fine all session on
+-- this driver version, so no need for the classic (and now often
+-- counterproductive) WLR_NO_HARDWARE_CURSORS workaround; if cursor
+-- corruption ever shows up, that's the first thing to try.
+hl.env("LIBVA_DRIVER_NAME", "nvidia")             -- correct VA-API driver for hardware video decode
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")     -- correct GLX vendor for XWayland/GLX apps
+hl.env("GBM_BACKEND", "nvidia-drm")               -- correct GBM backend for buffer allocation
+hl.env("NVD_BACKEND", "direct")                   -- modern NVIDIA video decode backend
 
 
 -----------------------
@@ -258,7 +270,7 @@ hl.config({
         kb_layout  = "se",
         kb_variant = "nodeadkeys",
         kb_model   = "",
-        kb_options = "",
+        kb_options = "caps:escape", -- Caps Lock acts as Escape everywhere (XKB-level, not nvim-specific)
         kb_rules   = "",
 
 	repeat_delay = 200,
@@ -298,6 +310,7 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
 -- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + W", hl.dsp.window.close())
