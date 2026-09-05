@@ -82,7 +82,13 @@ local menu        = "rofi -show drun"
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("hyprpaper")
-    hl.exec_cmd("dunst")
+    -- dunst replaced by Quickshell's own NotificationServer (see
+    -- quickshell/shell.qml) -- only one process can own the
+    -- org.freedesktop.Notifications D-Bus name at a time. Config kept
+    -- in dunst/ as a fallback; see git tag pre-quickshell-notifications
+    -- to fully revert if needed.
+    -- hl.exec_cmd("dunst")
+    hl.exec_cmd("quickshell")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("wooting-bg-service") -- needed for Wootility to talk to the keyboard
 end)
