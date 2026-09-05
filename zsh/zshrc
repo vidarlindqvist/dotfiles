@@ -1,0 +1,37 @@
+eval "$(starship init zsh)"
+
+# safe, clean shutdown -- shadows /usr/bin/shutdown in this interactive
+# shell only (scripts/other programs calling it directly are unaffected)
+alias shutdown='systemctl poweroff'
+
+# --- tab completion ---
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' menu select                          # arrow-key menu to pick a completion
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'    # case-insensitive matching
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"      # colorize like ls
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
+
+# --- fish-like autosuggestions (ghost text from history) ---
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+bindkey '^ ' autosuggest-accept   # Ctrl+Space also accepts (Right arrow / End already do by default)
+
+# fuzzy-find a file (from cwd, or from $1 if given) and open it in neovim
+ff() {
+    local file
+    file=$(fd --type f --hidden --exclude .git . "${1:-.}" | fzf --preview 'head -200 {}') || return
+    [ -n "$file" ] && nvim "$file"
+}
+
+# fuzzy-find a directory (from cwd, or from $1 if given) and cd into it
+fcd() {
+    local dir
+    dir=$(fd --type d --hidden --exclude .git . "${1:-.}" | fzf) || return
+    [ -n "$dir" ] && cd "$dir"
+}
+
+# --- syntax highlighting (must be sourced last) ---
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+export PATH="$HOME/.local/bin:$PATH"

@@ -30,6 +30,8 @@ link "$REPO_DIR/gtk-4.0" "$HOME/.config/gtk-4.0"
 link "$REPO_DIR/dunst" "$HOME/.config/dunst"
 link "$REPO_DIR/swappy" "$HOME/.config/swappy"
 link "$REPO_DIR/gtk-theme-glass" "$HOME/.local/share/themes/Tokyonight-Dark-Glass"
+link "$REPO_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
+link "$REPO_DIR/zsh/zshrc" "$HOME/.zshrc"
 
 # Zen Browser's profile folder name is randomly generated per-install, so
 # this path will need updating if the profile is ever recreated. Current

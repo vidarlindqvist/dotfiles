@@ -21,8 +21,20 @@
 hl.monitor({
     output   = "DP-6",
     mode     = "2560x1440@480.17Hz",
-    position = "auto",
+    position = "0x0",
     scale    = "1",
+})
+
+-- DP-5 (Dell U2724D), vertical/portrait, to the right of DP-6, bottom
+-- (lower bezel) aligned with DP-6 -- that's how they actually sit on the
+-- desk. DP-6's bottom edge is at y=1440; DP-5 is 2560 tall (rotated), so
+-- its top needs to be at 1440 - 2560 = -1120.
+hl.monitor({
+    output    = "DP-5",
+    mode      = "2560x1440@120.00Hz",
+    position  = "2560x-1120",
+    scale     = 1,
+    transform = 3,
 })
 
 -- Fallback for any other/future monitor
@@ -298,6 +310,10 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + space", hl.dsp.exec_cmd(menu))    -- Spotlight-style launcher
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
+
+-- Move focus / windows between monitors ("+1" cycles, wraps with just 2 monitors)
+hl.bind(mainMod .. " + O",         hl.dsp.focus({ monitor = "+1" }))
+hl.bind(mainMod .. " + SHIFT + O", hl.dsp.window.move({ monitor = "+1", follow = true }))
 
 -- Screenshots (saved to ~/Pictures/Screenshots)
 -- Print: whole screen, saved + copied to clipboard in one shot

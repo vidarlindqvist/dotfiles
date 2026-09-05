@@ -1,0 +1,66 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Tokyonight (Night variant) -- same palette as ghostty/tmux/GTK/dunst/Zen:
+# bg #1a1b26, bg_dark #16161e, bg_highlight #292e42, fg #c0caf5,
+# comment #565f89, blue #7aa2f7, cyan #7dcfff, green #9ece6a,
+# magenta #bb9af7, red #f7768e, yellow #e0af68
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$golang\
+$lua\
+$fill\
+$cmd_duration
+$character"""
+
+[fill]
+symbol = ' '
+
+[character]
+success_symbol = '[❯](bold #7aa2f7)'
+error_symbol = '[❯](bold #f7768e)'
+vimcmd_symbol = '[❮](bold #9ece6a)'
+
+[directory]
+style = 'bold #7aa2f7'
+truncation_length = 4
+truncate_to_repo = true
+read_only = ' 󰌾'
+
+[git_branch]
+style = 'bold #bb9af7'
+format = '[on](#565f89) [$symbol$branch]($style) '
+
+[git_status]
+style = '#e0af68'
+format = '([$all_status$ahead_behind]($style)) '
+
+[nodejs]
+style = '#9ece6a'
+format = '[$symbol($version)]($style) '
+
+[python]
+style = '#e0af68'
+format = '[$symbol($version)]($style) '
+
+[rust]
+style = '#f7768e'
+format = '[$symbol($version)]($style) '
+
+[golang]
+style = '#7dcfff'
+format = '[$symbol($version)]($style) '
+
+[lua]
+style = '#7aa2f7'
+format = '[$symbol($version)]($style) '
+
+[cmd_duration]
+min_time = 2000
+style = '#565f89'
+format = 'took [$duration]($style) '
