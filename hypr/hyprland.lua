@@ -45,6 +45,15 @@ hl.monitor({
     scale    = "auto",
 })
 
+-- Pin workspace numbers to a monitor: 1-5 always on DP-6 (main), 6-10
+-- always on DP-5 (vertical). See https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
+for i = 1, 5 do
+    hl.workspace_rule({ workspace = tostring(i), monitor = "DP-6", default = (i == 1) })
+end
+for i = 6, 10 do
+    hl.workspace_rule({ workspace = tostring(i), monitor = "DP-5", default = (i == 6) })
+end
+
 
 ---------------------
 ---- MY PROGRAMS ----
@@ -227,6 +236,9 @@ hl.layer_rule({ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.2 
 
 -- Blur behind dunst notifications, same trick as rofi above
 hl.layer_rule({ match = { namespace = "notifications" }, blur = true, ignore_alpha = 0.2 })
+
+-- Blur behind the Quickshell clock/control-center island
+hl.layer_rule({ match = { namespace = "quickshell" }, blur = true, ignore_alpha = 0.2 })
 
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({

@@ -32,6 +32,7 @@ link "$REPO_DIR/swappy" "$HOME/.config/swappy"
 link "$REPO_DIR/gtk-theme-glass" "$HOME/.local/share/themes/Tokyonight-Dark-Glass"
 link "$REPO_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$REPO_DIR/zsh/zshrc" "$HOME/.zshrc"
+link "$REPO_DIR/quickshell" "$HOME/.config/quickshell"
 
 # Zen Browser's profile folder name is randomly generated per-install, so
 # this path will need updating if the profile is ever recreated. Current
