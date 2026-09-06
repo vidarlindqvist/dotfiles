@@ -38,27 +38,32 @@ format = '[on](#565f89) [$symbol$branch]($style) '
 
 [git_status]
 style = '#e0af68'
-format = '([$all_status$ahead_behind]($style)) '
+format = '([\[$all_status$ahead_behind\]]($style)) '
 
 [nodejs]
 style = '#9ece6a'
-format = '[$symbol($version)]($style) '
+format = '[via](#565f89) [$symbol($version)]($style) '
 
 [python]
 style = '#e0af68'
-format = '[$symbol($version)]($style) '
+# nf-dev-python (U+E73C) -- the actual Python logo mark, not the default
+# snake emoji. $virtualenv only renders when a venv is actually activated
+# (VIRTUAL_ENV set), not merely present as a .venv folder on disk -- there's
+# no auto-activation hook in zsh/, so `source .venv/bin/activate` first.
+symbol = ' '
+format = '[via](#565f89) [$symbol($version )(\($virtualenv\) )]($style)'
 
 [rust]
 style = '#f7768e'
-format = '[$symbol($version)]($style) '
+format = '[via](#565f89) [$symbol($version)]($style) '
 
 [golang]
 style = '#7dcfff'
-format = '[$symbol($version)]($style) '
+format = '[via](#565f89) [$symbol($version)]($style) '
 
 [lua]
 style = '#7aa2f7'
-format = '[$symbol($version)]($style) '
+format = '[via](#565f89) [$symbol($version)]($style) '
 
 [cmd_duration]
 min_time = 2000
