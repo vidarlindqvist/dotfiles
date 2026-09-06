@@ -18,17 +18,19 @@ zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 bindkey '^ ' autosuggest-accept   # Ctrl+Space also accepts (Right arrow / End already do by default)
 
-# fuzzy-find a file (from cwd, or from $1 if given) and open it in neovim
+# fuzzy-find a file (from $HOME, or from $1 if given) and open it in neovim
 ff() {
     local file
-    file=$(fd --type f --hidden --exclude .git . "${1:-.}" | fzf --preview 'head -200 {}') || return
+    file=$(fd --type f --hidden --exclude .git . "${1:-$HOME}" | fzf --preview 'head -200 {}') || return
     [ -n "$file" ] && nvim "$file"
 }
 
-# fuzzy-find a directory (from cwd, or from $1 if given) and cd into it
+# fuzzy-find a directory (from $HOME, or from $1 if given) and cd into it.
+# Defaults to $HOME rather than cwd -- searching from / would be slow and
+# full of permission-denied noise from system dirs for no real benefit.
 fcd() {
     local dir
-    dir=$(fd --type d --hidden --exclude .git . "${1:-.}" | fzf) || return
+    dir=$(fd --type d --hidden --exclude .git . "${1:-$HOME}" | fzf) || return
     [ -n "$dir" ] && cd "$dir"
 }
 
