@@ -10,4 +10,22 @@ return {
     -- Downloads its own preview-server/websocket binaries on first use
     -- (into stdpath('data')/typst-preview/) -- only real dependency is curl.
     opts = {},
+    -- init (not config) so this registers at startup regardless of when
+    -- the plugin itself lazy-loads -- it's unrelated to typst-preview,
+    -- just colocated here since this is the Typst-specific file.
+    -- Neovim's built-in spellchecker, no plugin needed. English ships
+    -- with Neovim; Swedish (sv.utf-8.spl/.sug) was fetched from the
+    -- official Vim spell files mirror into
+    -- ~/.local/share/nvim/site/spell/ since it isn't bundled. Both
+    -- languages checked at once -- a word only gets flagged if it
+    -- matches neither.
+    init = function()
+        vim.api.nvim_create_autocmd('FileType', {
+            pattern = 'typst',
+            callback = function()
+                vim.opt_local.spell = true
+                vim.opt_local.spelllang = { 'en', 'sv' }
+            end,
+        })
+    end,
 }
