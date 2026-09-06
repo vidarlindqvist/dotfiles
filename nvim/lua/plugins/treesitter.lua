@@ -20,6 +20,7 @@ return {
 	    "matlab",
 	    "latex",  -- parser name differs from the filetype: tex -> latex
 	    "bibtex", -- bib -> bibtex
+	    "typst",  -- parser name matches the filetype here, no remapping needed
 	    "vim",
 	    "vimdoc",
 	    "query",
@@ -29,7 +30,7 @@ return {
 	ts.install(parsers)
 
 	-- Filetypes to turn treesitter on for.
-	local filetypes = { "lua", "python", "matlab", "tex", "bib", "vim", "help", "query" }
+	local filetypes = { "lua", "python", "matlab", "tex", "bib", "typst", "vim", "help", "query" }
 
 	vim.api.nvim_create_autocmd('FileType', {
 	    pattern = filetypes,

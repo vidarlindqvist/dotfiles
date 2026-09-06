@@ -1,14 +1,19 @@
 -- LSP + completion, Python-focused (LaTeX added alongside: see texlab below
--- and plugins/latex.lua for vimtex + LaTeX-specific snippets).
+-- and plugins/latex.lua for vimtex + LaTeX-specific snippets; Typst's tinymist
+-- is here too, with typst-preview.nvim in plugins/typst.lua).
 --
 -- LSP itself needs NO plugin: `vim.lsp.config` / `vim.lsp.enable` are built into
 -- Neovim 0.11+. The plugins below are only for the completion menu, which is why
 -- the spec is anchored on nvim-cmp.
 --
--- Servers used (both installed via brew):
---   basedpyright -- types, completion, go-to-definition
+-- Servers used -- installed via brew on macOS, pacman/pipx on Arch (this
+-- config is shared across both machines):
+--   basedpyright -- types, completion, go-to-definition (pipx install basedpyright;
+--                   not in Arch's official repos)
 --   ruff         -- linting + formatting (fast; complements the type checker)
 --   texlab       -- LaTeX LSP (diagnostics/completion/hover only -- see below)
+--   lua_ls       -- this config's own language
+--   tinymist     -- Typst LSP
 return {
     'hrsh7th/nvim-cmp',
     commit = '2ffe79f1f021def8dd1fcd81deb16f1bb0d989f3', -- pinned, as with the other plugins
@@ -231,7 +236,36 @@ return {
 	    },
 	}
 
-	vim.lsp.enable({ 'basedpyright', 'ruff', 'texlab' })
+	-- Lua. This config's own language -- workspace.library points it at
+	-- Neovim's own runtime (vim.*, the stdlib) so it doesn't flag every
+	-- `vim.xyz` call as undefined.
+	vim.lsp.config['lua_ls'] = {
+	    cmd = { 'lua-language-server' },
+	    filetypes = { 'lua' },
+	    root_markers = { '.luarc.json', '.luarc.jsonc', '.git' },
+	    settings = {
+		Lua = {
+		    runtime = { version = 'LuaJIT' }, -- Neovim embeds LuaJIT, not stock Lua
+		    diagnostics = { globals = { 'vim' } },
+		    workspace = {
+			library = vim.api.nvim_get_runtime_file('', true),
+			checkThirdParty = false,
+		    },
+		    telemetry = { enable = false },
+		},
+	    },
+	}
+
+	-- Typst. tinymist is zero-config-friendly by design; live preview
+	-- (typst-preview.nvim) lives in plugins/typst.lua rather than here,
+	-- since it's not itself an LSP concern.
+	vim.lsp.config['tinymist'] = {
+	    cmd = { 'tinymist' },
+	    filetypes = { 'typst' },
+	    root_markers = { '.git' },
+	}
+
+	vim.lsp.enable({ 'basedpyright', 'ruff', 'texlab', 'lua_ls', 'tinymist' })
 
 	---------------------------------------------------------------------
 	-- per-buffer keymaps

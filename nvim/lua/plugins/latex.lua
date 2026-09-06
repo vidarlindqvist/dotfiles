@@ -14,10 +14,11 @@ return {
 	commit = '2f279775e5b73743973bf2b013791f8f1673d5ac', -- pinned, as with the rest
 	lazy = false, -- vimtex explicitly does not support lazy-loading
 	init = function()
-	    -- Skim, installed via `brew install --cask skim`. displayline (from
-	    -- the same cask) is what drives forward search: cursor position in
-	    -- nvim -> jump to the matching spot in the rendered PDF.
-	    vim.g.vimtex_view_method = 'skim'
+	    -- Viewer differs by platform: Skim on macOS (`brew install --cask
+	    -- skim`), Zathura on Linux (`pacman -S zathura zathura-pdf-poppler`)
+	    -- -- Skim doesn't exist there. Both are vimtex's best-supported
+	    -- viewers with full forward/inverse SyncTeX search built in.
+	    vim.g.vimtex_view_method = vim.uv.os_uname().sysname == 'Darwin' and 'skim' or 'zathura'
 
 	    -- latexmk in continuous mode: saving the .tex file recompiles
 	    -- automatically, no manual `\ll` needed after the first run.
