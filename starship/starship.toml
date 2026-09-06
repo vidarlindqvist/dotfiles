@@ -14,6 +14,7 @@ $python\
 $rust\
 $golang\
 $lua\
+$typst\
 $fill\
 $cmd_duration
 $character"""
@@ -37,7 +38,7 @@ style = 'bold #bb9af7'
 format = '[on](#565f89) [$symbol$branch]($style) '
 
 [git_status]
-style = '#e0af68'
+style = '#f7768e'
 format = '([\[$all_status$ahead_behind\]]($style)) '
 
 [nodejs]
@@ -50,7 +51,7 @@ style = '#e0af68'
 # snake emoji. $virtualenv only renders when a venv is actually activated
 # (VIRTUAL_ENV set), not merely present as a .venv folder on disk -- there's
 # no auto-activation hook in zsh/, so `source .venv/bin/activate` first.
-symbol = ' '
+symbol = ' '
 format = '[via](#565f89) [$symbol($version )(\($virtualenv\) )]($style)'
 
 [rust]
@@ -63,7 +64,15 @@ format = '[via](#565f89) [$symbol($version)]($style) '
 
 [lua]
 style = '#7aa2f7'
+# nf-dev-lua (U+E826) -- the actual Lua logo, not the default moon emoji.
+symbol = ' '
 format = '[via](#565f89) [$symbol($version)]($style) '
+
+[typst]
+style = 'bold #bb9af7'
+# nf-linux-typst (U+F37F) -- Typst's own logo mark.
+symbol = ' '
+format = '[via](#565f89) [$symbol($version )]($style)'
 
 [cmd_duration]
 min_time = 2000
