@@ -17,3 +17,11 @@ user_pref("zen.theme.border-radius", 0);
 // https://github.com/zen-browser/desktop/issues/13495
 // https://github.com/zen-browser/desktop/issues/6856
 user_pref("widget.wayland.fractional-scale.enabled", false);
+
+// Stops the sidebar/toolbar popping open just from moving the mouse near
+// the screen edge in compact mode -- confirmed via Zen's own source
+// (src/zen/compact-mode/ZenCompactMode.mjs): the hover-reveal handler
+// checks this exact pref and no-ops the reveal when it's false, leaving
+// a manual toggle (keybind set in Zen's own Settings > Shortcuts) as the
+// only way to bring the sidebar up.
+user_pref("zen.view.compact.show-sidebar-and-toolbar-on-hover", false);
