@@ -67,7 +67,14 @@ ShellRoot {
         readonly property var sinkAudio: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
         readonly property real volumePct: sinkAudio ? sinkAudio.volume : 0
         readonly property bool isMuted: sinkAudio ? sinkAudio.muted : false
-        readonly property string accentColor: osdPanel.isMuted ? "#f7768e" : "#7aa2f7"
+        // Matches the -l 1.5 cap on the XF86AudioRaiseVolume keybind in
+        // hyprland.lua -- the bar's full width represents this max, not
+        // a flat 100%, so boosted volume is visible instead of just
+        // reading as "full" the same as exactly 100% would.
+        readonly property real maxVolume: 1.5
+        readonly property string accentColor: osdPanel.isMuted ? "#f7768e"
+            : osdPanel.volumePct > 1 ? "#e0af68" // boosted past 100% -- distortion risk
+            : "#7aa2f7"
 
         // Icon codepoints verified against the nerd-fonts glyphnames.json
         // registry: nf-md-volume_mute=U+F075F, nf-md-volume_off=U+F0581,
@@ -138,7 +145,17 @@ ShellRoot {
                         height: parent.height
                         radius: 3
                         color: osdPanel.accentColor
-                        width: parent.width * Math.min(1, Math.max(0, osdPanel.volumePct))
+                        width: parent.width * Math.min(1, Math.max(0, osdPanel.volumePct / osdPanel.maxVolume))
+                    }
+
+                    // Marks where "normal" 100% sits on a track whose
+                    // full width represents maxVolume (150%) instead.
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: parent.width * (1 / osdPanel.maxVolume) - width / 2
+                        width: 1
+                        height: parent.height + 4
+                        color: "#565f89"
                     }
                 }
 
@@ -178,7 +195,7 @@ ShellRoot {
             right: 12
         }
 
-        implicitWidth: 320
+        implicitWidth: 420
         implicitHeight: Math.max(1, notifColumn.implicitHeight)
         color: "transparent"
 
@@ -197,13 +214,6 @@ ShellRoot {
                     width: notifColumn.width
                     height: notifBg.implicitHeight
 
-                    // Tokyonight urgency colors, same scheme as the old
-                    // dunst config (frame_color per urgency_*).
-                    readonly property color urgencyColor:
-                        modelData.urgency === NotificationUrgency.Critical ? "#f7768e"
-                        : modelData.urgency === NotificationUrgency.Low ? "#565f89"
-                        : "#7aa2f7"
-
                     // image is often a direct picture (e.g. a contact
                     // photo); appIcon is usually a themed icon *name*
                     // that needs resolving via Quickshell.iconPath() to
@@ -218,21 +228,29 @@ ShellRoot {
                     Rectangle {
                         id: notifBg
                         width: parent.width
-                        implicitHeight: notifContent.implicitHeight + 24
-                        color: "#1a1b26"
-                        radius: 12
+                        implicitHeight: notifContent.implicitHeight + 32
+                        // Same background/alpha as the pill and calendar
+                        // popup cards, for a consistent look across the
+                        // whole shell -- was a fully opaque color before.
+                        color: "#e60d0e14" // alpha=0.9 (0xe6/255)
+                        radius: 16
                         border.width: 1
-                        border.color: notifCard.urgencyColor
+                        // Same static border as the calendar popup, except
+                        // critical notifications keep a red border to stay
+                        // noticeable -- shape/width/radius are otherwise
+                        // identical either way.
+                        border.color: notifCard.modelData.urgency === NotificationUrgency.Critical
+                            ? "#f7768e" : "#292e42"
 
                         Row {
                             id: notifContent
                             anchors.centerIn: parent
-                            width: parent.width - 24
-                            spacing: 10
+                            width: parent.width - 32
+                            spacing: 12
 
                             Image {
-                                width: 32
-                                height: 32
+                                width: 40
+                                height: 40
                                 visible: notifCard.iconSource !== ""
                                 source: notifCard.iconSource
                                 fillMode: Image.PreserveAspectFit
@@ -240,15 +258,15 @@ ShellRoot {
                             }
 
                             Column {
-                                width: notifCard.iconSource !== "" ? parent.width - 42 : parent.width
-                                spacing: 4
+                                width: notifCard.iconSource !== "" ? parent.width - 52 : parent.width
+                                spacing: 6
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 Text {
                                     width: parent.width
                                     color: "#c0caf5"
                                     font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 16
                                     font.bold: true
                                     wrapMode: Text.Wrap
                                     textFormat: Text.PlainText
@@ -260,7 +278,7 @@ ShellRoot {
                                     visible: notifCard.modelData.body !== ""
                                     color: "#a9b1d6"
                                     font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 12
+                                    font.pixelSize: 14
                                     wrapMode: Text.Wrap
                                     textFormat: Text.PlainText
                                     text: notifCard.modelData.body
@@ -306,6 +324,10 @@ ShellRoot {
         }
 
         property bool expanded: false
+        // Independent of `expanded` itself, but collapsing the pill hides
+        // the calendar too -- see calendarPopup.visible -- since its own
+        // icon (the only way to close it) disappears with the rest.
+        property bool calendarOpen: false
 
         // Computed reactively from containsMouse rather than set
         // imperatively via onEntered/onExited -- imperative handlers
@@ -313,7 +335,9 @@ ShellRoot {
         // between two adjacent hitboxes, causing a flash to "".  A pure
         // binding re-evaluates all inputs together and can't glitch
         // that way.
-        readonly property string hoverText: ethernetArea.containsMouse ? "Ethernet: connected"
+        readonly property string hoverText: calendarArea.containsMouse ? "Calendar"
+            : ethernetArea.containsMouse ? "Ethernet: connected"
+            : sleepArea.containsMouse ? "Sleep"
             : shutdownArea.containsMouse ? "Shut down"
             : logoutArea.containsMouse ? "Log out"
             : ""
@@ -334,7 +358,7 @@ ShellRoot {
         // timeText's width is constant regardless of expanded (always
         // "hh:mm" in a monospace font), so this is a true fixed value,
         // not something that churns per frame.
-        implicitWidth: timeText.implicitWidth + 16 + (32 * 3) + 24
+        implicitWidth: timeText.implicitWidth + 16 + (32 * 5) + 24
         implicitHeight: 32 + 20 + hoverReserve
 
         color: "transparent"
@@ -395,6 +419,54 @@ ShellRoot {
                     }
                 }
 
+                // Calendar icon -- a small mini-page mimicking the classic
+                // "today" calendar app icon (colored header strip + day
+                // number below), not a static Nerd Font glyph, since the
+                // whole point is that it visibly updates with the date.
+                Item {
+                    width: islandPanel.expanded ? 32 : 0
+                    height: 32
+                    clip: true
+                    visible: width > 0
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 22
+                        height: 22
+                        radius: 4
+                        color: "#1a1b26"
+                        border.width: 1
+                        border.color: "#414868"
+                        clip: true
+
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            height: 6
+                            color: "#f7768e"
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 1
+                            color: "#c0caf5"
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.bold: true
+                            font.pixelSize: 11
+                            text: Qt.formatDateTime(clock.date, "d")
+                        }
+                    }
+
+                    MouseArea {
+                        id: calendarArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: islandPanel.calendarOpen = !islandPanel.calendarOpen
+                    }
+                }
+
                 Item {
                     width: islandPanel.expanded ? 32 : 0
                     height: 32
@@ -413,6 +485,35 @@ ShellRoot {
                         id: ethernetArea
                         anchors.fill: parent
                         hoverEnabled: true
+                    }
+                }
+
+                // nf-md-sleep (U+F04B2), same verified codepoint used on
+                // the lock screen's own power row (see quickshell-lock/
+                // LockSurface.qml) -- cyan since ethernet/logout/shutdown
+                // already claim blue/orange/red in this pill.
+                Item {
+                    width: islandPanel.expanded ? 32 : 0
+                    height: 32
+                    clip: true
+                    visible: width > 0
+
+                    Text {
+                        anchors.centerIn: parent
+                        color: "#7dcfff"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 18
+                        text: String.fromCodePoint(0xf04b2)
+                    }
+
+                    MouseArea {
+                        id: sleepArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            islandPanel.expanded = false
+                            Quickshell.execDetached(["systemctl", "suspend"])
+                        }
                     }
                 }
 
@@ -462,6 +563,138 @@ ShellRoot {
                         onClicked: {
                             islandPanel.expanded = false
                             Quickshell.execDetached(["systemctl", "poweroff"])
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Small month-view calendar, opened by the pill's calendar icon.
+    // Deliberately just a viewer for now -- day cells aren't clickable
+    // yet; a rofi-driven fullscreen version is planned separately later.
+    PanelWindow {
+        id: calendarPopup
+        screen: Quickshell.screens.find(s => s.name === "DP-6")
+        exclusionMode: ExclusionMode.Ignore
+        // Tied to islandPanel.expanded too -- if the pill collapses, the
+        // icon that's the only way to close this disappears with it, so
+        // the popup would otherwise be stuck open with no way to dismiss.
+        visible: islandPanel.expanded && islandPanel.calendarOpen
+
+        anchors {
+            bottom: true
+            right: true
+        }
+
+        // Pill's own implicitHeight (32 fixed row + 20 padding +
+        // hoverReserve 22 = 74) plus its own bottom margin (10) plus an
+        // 8px gap, so the popup sits just above it without touching.
+        margins {
+            bottom: islandPanel.implicitHeight + 10 + 8
+            right: 12
+        }
+
+        implicitWidth: 300
+        implicitHeight: calendarColumn.implicitHeight + 32
+        color: "transparent"
+
+        readonly property date today: clock.date
+        readonly property int gridYear: today.getFullYear()
+        readonly property int gridMonth: today.getMonth() // 0-indexed
+        readonly property int daysInMonth: new Date(gridYear, gridMonth + 1, 0).getDate()
+        // JS Date.getDay(): Sunday=0..Saturday=6 -- shifted here to a
+        // Monday-first week (Monday=0..Sunday=6).
+        readonly property int leadingBlanks: (new Date(gridYear, gridMonth, 1).getDay() + 6) % 7
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 16
+            color: "#e60d0e14" // alpha=0.9 (0xe6/255), same convention as the pill card
+            border.width: 1
+            border.color: "#292e42"
+
+            Column {
+                id: calendarColumn
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 10
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "#c0caf5"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.bold: true
+                    font.pixelSize: 16
+                    text: Qt.formatDateTime(calendarPopup.today, "MMMM yyyy")
+                }
+
+                Row {
+                    width: parent.width
+
+                    Repeater {
+                        model: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+                        delegate: Text {
+                            width: calendarColumn.width / 7
+                            horizontalAlignment: Text.AlignHCenter
+                            color: "#565f89"
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 11
+                            text: modelData
+                        }
+                    }
+                }
+
+                Grid {
+                    width: parent.width
+                    columns: 7
+
+                    Repeater {
+                        model: 42 // 6 weeks -- always enough to cover any month's layout
+
+                        delegate: Item {
+                            id: dayCell
+                            width: calendarColumn.width / 7
+                            height: 34
+
+                            readonly property int dayNum: index - calendarPopup.leadingBlanks + 1
+                            readonly property bool valid: dayNum >= 1 && dayNum <= calendarPopup.daysInMonth
+                            readonly property bool isToday: valid && dayNum === calendarPopup.today.getDate()
+
+                            Rectangle {
+                                visible: dayCell.isToday
+                                anchors.centerIn: parent
+                                width: 26
+                                height: 26
+                                radius: 13
+                                color: "#7aa2f7"
+                            }
+
+                            Rectangle {
+                                visible: !dayCell.isToday && dayCell.valid && cellHover.containsMouse
+                                anchors.centerIn: parent
+                                width: 26
+                                height: 26
+                                radius: 13
+                                color: "#292e42"
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                visible: dayCell.valid
+                                color: dayCell.isToday ? "#1a1b26" : "#c0caf5"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.bold: dayCell.isToday
+                                font.pixelSize: 12
+                                text: dayCell.valid ? dayCell.dayNum : ""
+                            }
+
+                            MouseArea {
+                                id: cellHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                            }
                         }
                     }
                 }

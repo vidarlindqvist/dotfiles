@@ -328,11 +328,13 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
 -- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
--- Plain mainMod+L collides with mainMod+l ("focus right", vim-style
--- binds below) -- Hyprland doesn't distinguish key case without an
--- extra modifier, so that combo was silently going to focus instead
--- of lock. Shift makes this a genuinely different combo.
-hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("/home/vidar/dev/dotfiles/quickshell-lock/lock.sh"))
+-- Lock keybind disabled -- home desktop, no need for a lockscreen (see
+-- hypridle.conf for the matching autolock disablement). Plain mainMod+L
+-- collides with mainMod+l ("focus right", vim-style binds below) --
+-- Hyprland doesn't distinguish key case without an extra modifier -- so
+-- if this comes back, Shift still needs to make it a genuinely different
+-- combo.
+-- hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("/home/vidar/dev/dotfiles/quickshell-lock/lock.sh"))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + W", hl.dsp.window.close())
@@ -393,7 +395,11 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Laptop multimedia keys for volume and LCD brightness
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+-- -l 1.5 allows PipeWire's software over-amplification up to 150% (past
+-- the usual 100% ceiling) -- audio at/near 100% already can distort when
+-- boosted this way, so this trades a bit of headroom-clipping risk for
+-- quiet apps actually being audible at max.
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
 hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
