@@ -107,6 +107,13 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- keys, but some GTK apps prefer the env var over gsettings
 hl.env("GTK_THEME", "Tokyonight-Dark")
 
+-- Qt6 apps (ParaView, etc.) -- without this, Qt6 apps ignore qt6ct
+-- entirely and just render with Qt's plain default style/palette. The
+-- actual Tokyonight color scheme is selected inside qt6ct itself
+-- (Appearance tab -> palette: custom -> color scheme: tokyonight),
+-- not something set via env var.
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+
 -- NVIDIA (nvidia-open) hardening for Wayland. Nothing here forces
 -- software rendering/cursors -- everything's worked fine all session on
 -- this driver version, so no need for the classic (and now often
