@@ -9,6 +9,7 @@ format = """
 $directory\
 $git_branch\
 $git_status\
+$package\
 $nodejs\
 $python\
 $rust\
@@ -40,6 +41,12 @@ format = '[on](#565f89) [$symbol$branch]($style) '
 [git_status]
 style = '#f7768e'
 format = '([\[$all_status$ahead_behind\]]($style)) '
+
+[package]
+style = '#e0af68'
+# nf-oct-package (U+F487) -- the box icon from Starship's own Nerd Font preset.
+symbol = ' '
+format = '[is](#565f89) [$symbol$version]($style) '
 
 [nodejs]
 style = '#9ece6a'

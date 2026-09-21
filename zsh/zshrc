@@ -3,6 +3,7 @@ eval "$(starship init zsh)"
 # safe, clean shutdown -- shadows /usr/bin/shutdown in this interactive
 # shell only (scripts/other programs calling it directly are unaffected)
 alias shutdown='systemctl poweroff'
+alias of='source openfoam'
 
 # --- tab completion ---
 autoload -Uz compinit
@@ -37,3 +38,4 @@ fcd() {
 # --- syntax highlighting (must be sourced last) ---
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 export PATH="$HOME/.local/bin:$PATH"
+alias tagtool='/home/vidar/ai/kohya_ss/.venv/bin/python /home/vidar/ai/tagtool/tagtool.py'

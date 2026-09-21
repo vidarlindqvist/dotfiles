@@ -1,0 +1,7 @@
+# Activate the OpenFOAM environment. Not a script: meant to be sourced, as
+#
+#     source openfoam
+#
+# zsh's `source` searches $PATH when the name has no slash, and ~/.local/bin
+# sits at the front of it, so the bare name is enough from any directory.
+source /opt/OpenFOAM/OpenFOAM-v2606/etc/bashrc
