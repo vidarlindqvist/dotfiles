@@ -1,0 +1,111 @@
+/* Tokyonight (Night) -- same palette as quickshell/ghostty/tmux/dunst:
+ * bg #1a1b26, bg_dark #16161e, bg_highlight #292e42, fg #c0caf5,
+ * comment #565f89, blue #7aa2f7, border #414868
+ * Scoped to .thunar so every other GTK app keeps the stock Tokyonight-Dark theme. */
+
+@define-color tn_bg        #1a1b26;
+@define-color tn_bg_dark   #16161e;
+@define-color tn_bg_high   #292e42;
+@define-color tn_fg        #c0caf5;
+@define-color tn_comment   #565f89;
+@define-color tn_blue      #7aa2f7;
+@define-color tn_border    #414868;
+
+/* File area */
+.thunar .view {
+  background-color: @tn_bg;
+  color: @tn_fg;
+}
+
+/* Sidebar one shade darker so the panes read apart.
+ * Needs the extra class: the shortcuts pane is a .view too. */
+.thunar .sidebar,
+.thunar .sidebar .view {
+  background-color: @tn_bg_dark;
+  color: @tn_fg;
+}
+
+.thunar .sidebar .view:hover {
+  background-color: @tn_bg_high;
+}
+
+/* Selection accent */
+.thunar .view:selected,
+.thunar .sidebar .view:selected,
+.thunar .standard-view.frame widget.view:selected {
+  background-color: @tn_blue;
+  color: @tn_bg_dark;
+}
+
+/* Chrome sits with the sidebar, not the file area */
+.thunar toolbar,
+.thunar menubar {
+  background-color: @tn_bg_dark;
+  box-shadow: inset 0 -1px @tn_border;
+}
+
+/* Breadcrumbs: flat until active, then accented */
+.thunar .path-bar button.path-bar-button {
+  border-radius: 6px;
+  color: @tn_fg;
+}
+
+.thunar .path-bar button.path-bar-button:hover {
+  background-color: @tn_bg_high;
+}
+
+.thunar .path-bar button.path-bar-button:checked {
+  background-color: @tn_bg_high;
+  color: @tn_blue;
+}
+
+/* Status bar as quiet metadata, not chrome */
+.thunar statusbar {
+  background-color: @tn_bg_dark;
+  color: @tn_comment;
+  border-top: 1px solid @tn_border;
+}
+
+/* ------------------------------------------------------------------
+ * Transparency -- matches ghostty's background-opacity = 0.75.
+ *
+ * Kept as its own block so it can be tuned or deleted without touching
+ * the colour rules above. To tinker: change the 0.75 values. 1.0 is
+ * opaque, lower is more see-through. They do not have to match each
+ * other -- a slightly more opaque sidebar often reads better.
+ *
+ * Hyprland blurs behind this automatically: decoration.blur.enabled is
+ * already true in hyprland.lua, and Hyprland blurs any window that has
+ * transparency. That is the same mechanism ghostty uses, so no window
+ * rule is needed. (ghostty asks for blur-radius 20; Hyprland's global
+ * blur size=3/passes=1 is what actually applies here.)
+ *
+ * :hover and :selected are deliberately left opaque -- they have higher
+ * specificity than the rules below, so they still win. Translucent
+ * selection highlights get hard to read over a busy wallpaper.
+ * ------------------------------------------------------------------ */
+
+/* GTK paints an opaque background on the toplevel window. It has to be
+ * cleared first, or the rgba fills below have an opaque layer behind
+ * them and nothing looks transparent. */
+.thunar,
+.thunar.background,
+.thunar window,
+.thunar window.background {
+  background-color: transparent;
+}
+
+.thunar .view {
+  background-color: alpha(@tn_bg, 0.75);
+}
+
+.thunar .sidebar,
+.thunar .sidebar .view {
+  background-color: alpha(@tn_bg_dark, 0.75);
+}
+
+.thunar toolbar,
+.thunar menubar,
+.thunar statusbar {
+  background-color: alpha(@tn_bg_dark, 0.75);
+}
