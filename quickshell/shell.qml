@@ -190,8 +190,12 @@ ShellRoot {
             right: true
         }
 
+        // Drops below the pill when the pill has been dragged up here,
+        // so the two never cover each other -- moving the pill out of the
+        // way is the whole point, and landing it under a notification
+        // would just relocate the problem.
         margins {
-            top: 12
+            top: islandPanel.atTop ? 12 + islandPanel.implicitHeight + 10 : 12
             right: 12
         }
 
@@ -313,13 +317,21 @@ ShellRoot {
         // reads as "" here, which correctly counts as unlocked.
         visible: lockStateFile.text().trim() !== "locked"
 
+        // Which right-hand corner the pill is parked in. Dragging the
+        // clock up or down moves it; a layer-shell surface can't be
+        // positioned freely, so this re-anchors rather than following the
+        // cursor pixel for pixel.
+        property bool atTop: false
+
         anchors {
-            bottom: true
+            top: islandPanel.atTop
+            bottom: !islandPanel.atTop
             right: true
         }
 
         margins {
-            bottom: 10
+            top: islandPanel.atTop ? 10 : 0
+            bottom: islandPanel.atTop ? 0 : 10
             right: 12
         }
 
@@ -368,12 +380,16 @@ ShellRoot {
             precision: SystemClock.Minutes
         }
 
-        // Hover label -- sits in the transparent headroom above the
+        // Hover label -- sits in the transparent headroom beside the
         // card, outside its background, never affects window sizing.
+        // The headroom is always on the far side of the card from the
+        // screen edge, so the label stays on screen in both corners.
         Text {
             anchors.horizontalCenter: card.horizontalCenter
-            anchors.top: parent.top
+            anchors.top: islandPanel.atTop ? undefined : parent.top
+            anchors.bottom: islandPanel.atTop ? parent.bottom : undefined
             anchors.topMargin: 4
+            anchors.bottomMargin: 4
             visible: islandPanel.hoverText !== ""
             color: "#c0caf5"
             font.family: "JetBrainsMono Nerd Font"
@@ -385,7 +401,8 @@ ShellRoot {
         // row only. Only this animates; the window itself is fixed.
         Rectangle {
             id: card
-            anchors.bottom: parent.bottom
+            anchors.top: islandPanel.atTop ? parent.top : undefined
+            anchors.bottom: islandPanel.atTop ? undefined : parent.bottom
             anchors.right: parent.right
             width: mainRow.implicitWidth + 24
             height: 32 + 20
@@ -413,9 +430,46 @@ ShellRoot {
                         text: Qt.formatDateTime(clock.date, "hh:mm")
                     }
 
+                    // Click expands, vertical drag moves the pill between
+                    // corners. Both live in onReleased rather than using
+                    // onClicked: onClicked still fires after a drag that
+                    // ends inside the hitbox, which would toggle the pill
+                    // open every time it was moved.
                     MouseArea {
+                        id: clockArea
                         anchors.fill: parent
-                        onClicked: islandPanel.expanded = !islandPanel.expanded
+                        hoverEnabled: true
+                        cursorShape: dragging ? Qt.ClosedHandCursor : Qt.ArrowCursor
+
+                        // Past this many pixels the gesture counts as a
+                        // drag, not a click. The window does not follow the
+                        // cursor while dragging -- the closed-hand cursor
+                        // above is the only cue until release.
+                        readonly property int dragThreshold: 24
+                        property real pressY: 0
+                        property bool dragging: false
+
+                        onPressed: mouse => {
+                            pressY = mouse.y
+                            dragging = false
+                        }
+                        // Guarded on `pressed`: hoverEnabled makes this
+                        // fire for plain hover too, which would otherwise
+                        // flip `dragging` on against a stale pressY and
+                        // show the drag cue with no button held.
+                        onPositionChanged: mouse => {
+                            if (pressed && Math.abs(mouse.y - pressY) > dragThreshold)
+                                dragging = true
+                        }
+                        onCanceled: dragging = false
+                        onReleased: mouse => {
+                            if (dragging) {
+                                islandPanel.atTop = mouse.y < pressY
+                                dragging = false
+                            } else {
+                                islandPanel.expanded = !islandPanel.expanded
+                            }
+                        }
                     }
                 }
 
@@ -583,15 +637,18 @@ ShellRoot {
         visible: islandPanel.expanded && islandPanel.calendarOpen
 
         anchors {
-            bottom: true
+            top: islandPanel.atTop
+            bottom: !islandPanel.atTop
             right: true
         }
 
         // Pill's own implicitHeight (32 fixed row + 20 padding +
-        // hoverReserve 22 = 74) plus its own bottom margin (10) plus an
-        // 8px gap, so the popup sits just above it without touching.
+        // hoverReserve 22 = 74) plus its own margin (10) plus an 8px gap,
+        // so the popup sits clear of the pill without touching it -- below
+        // it when the pill is at the top, above it when at the bottom.
         margins {
-            bottom: islandPanel.implicitHeight + 10 + 8
+            top: islandPanel.atTop ? islandPanel.implicitHeight + 10 + 8 : 0
+            bottom: islandPanel.atTop ? 0 : islandPanel.implicitHeight + 10 + 8
             right: 12
         }
 
